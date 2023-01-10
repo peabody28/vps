@@ -43,6 +43,7 @@ namespace vps.Controllers
                     sw.WriteLine("touch .ssh/authorized_keys && chmod 600 .ssh/authorized_keys");
                     sw.WriteLine(string.Format("chown -R {0}:{0} /home/{0}", model.Username));
                     sw.WriteLine("service ssh start");
+                    sw.WriteLine("exit");
                 }
             }
 
