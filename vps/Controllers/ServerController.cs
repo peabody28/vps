@@ -30,20 +30,23 @@ namespace vps.Controllers
             if (process == null)
                 return false;
 
+            string command = string.Format(@"
+                useradd -ms /bin/sh {0} &&
+                usermod -aG /bin/bash {0} &&
+                echo -e '{1}\n{1}' | passwd {0} &&
+                cd /home/{0} &&
+                mkdir .ssh && chmod 700 .ssh &&
+                touch .ssh/authorized_keys && chmod 600 .ssh/authorized_keys &&
+                chown -R {0}:{0} /home/{0} &&
+                service ssh start &&
+                exit", model.Username, model.Password);
+
             using (var sw = process.StandardInput)
             {
                 if (sw.BaseStream.CanWrite)
                 {
-                    sw.WriteLine($"docker run --name {model.Username} -p 2222:22 -d test tail -f /dev/null");
-                    sw.WriteLine($"useradd -ms /bin/sh {model.Username}");
-                    sw.WriteLine($"usermod -aG /bin/bash {model.Username}");
-                    sw.WriteLine(string.Format("echo -e \"{1}\\n{1}\" | passwd {0}", model.Username, model.Password));
-                    sw.WriteLine($"cd /home/{model.Username}");
-                    sw.WriteLine("mkdir .ssh && chmod 700 .ssh");
-                    sw.WriteLine("touch .ssh/authorized_keys && chmod 600 .ssh/authorized_keys");
-                    sw.WriteLine(string.Format("chown -R {0}:{0} /home/{0}", model.Username));
-                    sw.WriteLine("service ssh start");
-                    sw.WriteLine("exit");
+                    sw.WriteLine($"docker run --name {model.Username} -p 2781:80 -d test tail -f /dev/null");
+                    sw.WriteLine($"docker exec -d {model.Username} /bin/bash -c \"{command}\"");
                 }
             }
 
