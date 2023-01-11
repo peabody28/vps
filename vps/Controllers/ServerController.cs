@@ -45,7 +45,7 @@ namespace vps.Controllers
             {
                 if (sw.BaseStream.CanWrite)
                 {
-                    sw.WriteLine($"docker run --name {model.Username} -p 2781:80 -d test tail -f /dev/null");
+                    sw.WriteLine($"docker run --name {model.Username} -p 2212:22 -d test tail -f /dev/null");
                     sw.WriteLine($"docker exec -d {model.Username} /bin/bash -c \"{command}\"");
                 }
             }
