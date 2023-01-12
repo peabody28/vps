@@ -1,4 +1,4 @@
-﻿using System.Net.NetworkInformation;
+﻿using System.Net.Sockets;
 using vps.Interfaces;
 
 namespace vps.Operations
@@ -7,16 +7,21 @@ namespace vps.Operations
     {
         private const int StartPort = 1024;
         private const int EndPort = 49151;
+
         public bool IsPortAvailable(int port)
         {
-            var ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
-            var tcpConnInfoArray = ipGlobalProperties.GetActiveTcpConnections();
-            foreach (TcpConnectionInformation tcpi in tcpConnInfoArray)
+            using (TcpClient tcpClient = new TcpClient())
             {
-                if (tcpi.LocalEndPoint.Port.Equals(port))
+                try
+                {
+                    tcpClient.ConnectAsync("127.0.0.1", port).Wait(1000);
+                    return true;
+                }
+                catch (Exception)
+                {
                     return false;
+                }
             }
-            return true;
         }
 
         public int FreePort()
