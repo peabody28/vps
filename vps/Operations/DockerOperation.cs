@@ -39,7 +39,7 @@ namespace vps.Operations
 
             string command = string.Format(@"
                 useradd -ms /bin/sh {0} &&
-                usermod -aG /bin/bash {0} &&
+                usermod -aG sudo {0} &&
                 echo -e '{1}\n{1}' | passwd {0} &&
                 cd /home/{0} &&
                 mkdir .ssh && chmod 700 .ssh &&
@@ -52,7 +52,7 @@ namespace vps.Operations
             {
                 if (sw.BaseStream.CanWrite)
                 {
-                    sw.WriteLine($"docker run --name {username} -p {sshPort}:22 -d test tail -f /dev/null");
+                    sw.WriteLine($"docker run --privileged --name {username} -p {sshPort}:22 -d test tail -f /dev/null");
                     sw.WriteLine($"docker exec -d {username} /bin/bash -c \"{command}\"");
                 }
             }
