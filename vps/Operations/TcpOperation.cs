@@ -8,13 +8,13 @@ namespace vps.Operations
         private const int StartPort = 1024;
         private const int EndPort = 49151;
 
-        public bool IsPortAvailable(int port)
+        public bool IsPortAvailable(string host, int port)
         {
             using (TcpClient tcpClient = new TcpClient())
             {
                 try
                 {
-                    tcpClient.ConnectAsync("127.0.0.1", port).Wait(1000);
+                    tcpClient.ConnectAsync(host, port).Wait(1000);
                     return true;
                 }
                 catch (Exception)
@@ -24,10 +24,10 @@ namespace vps.Operations
             }
         }
 
-        public int FreePort()
+        public int FreePort(string host)
         {
             for (var portNumber = StartPort; portNumber <= EndPort; portNumber++)
-                if (IsPortAvailable(portNumber))
+                if (IsPortAvailable(host, portNumber))
                     return portNumber;
 
             return -1;

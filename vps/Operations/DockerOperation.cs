@@ -30,7 +30,8 @@ namespace vps.Operations
             if (process == null)
                 return null;
 
-            var sshPort = TcpOperation.FreePort();
+            var host = "0.0.0.0";
+            var sshPort = TcpOperation.FreePort(host);
             if (sshPort.Equals(-1))
                 return null;
 

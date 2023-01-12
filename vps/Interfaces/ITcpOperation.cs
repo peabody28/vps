@@ -2,8 +2,8 @@
 {
     public interface ITcpOperation
     {
-        bool IsPortAvailable(int port);
+        bool IsPortAvailable(string host, int port);
 
-        int FreePort();
+        int FreePort(string host);
     }
 }
