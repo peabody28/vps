@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
 using vps.Interfaces;
 
 namespace vps.Operations
@@ -10,17 +11,17 @@ namespace vps.Operations
 
         public bool IsPortAvailable(string host, int port)
         {
-            using (TcpClient tcpClient = new TcpClient())
+            var address = IPAddress.Parse(host);
+            IPEndPoint myEP = new IPEndPoint(address, port);
+            try
             {
-                try
-                {
-                    tcpClient.ConnectAsync(host, port).Wait(1000);
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
+                using Socket listeningSocket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                listeningSocket.Bind(myEP);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 
