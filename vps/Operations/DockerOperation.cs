@@ -10,9 +10,10 @@ namespace vps.Operations
 
         public ITcpOperation TcpOperation { get; set; }
 
-        public DockerOperation(ILogger<DockerOperation> logger)
+        public DockerOperation(ILogger<DockerOperation> logger, ITcpOperation tcpOperation)
         {
             Logger = logger;
+            TcpOperation = tcpOperation;
         }
 
         public DockerContainerModel CreateContainer(string username, string password)
@@ -30,6 +31,8 @@ namespace vps.Operations
                 return null;
 
             var sshPort = TcpOperation.FreePort();
+
+            Logger.LogInformation($"find free port: {sshPort}");
 
             string command = string.Format(@"
                 useradd -ms /bin/sh {0} &&
