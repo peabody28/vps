@@ -31,6 +31,8 @@ namespace vps.Operations
                 return null;
 
             var sshPort = TcpOperation.FreePort();
+            if (sshPort.Equals(-1))
+                return null;
 
             Logger.LogInformation($"find free port: {sshPort}");
 
