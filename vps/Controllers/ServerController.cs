@@ -18,13 +18,13 @@ namespace vps.Controllers
         }
 
         [HttpPost]
-        public DockerContainerModel Create(ServerCreateModel model)
+        public DockerContainerModel Create(UserModel model)
         {
-            var containerModel = DockerOperation.CreateContainer(model.Username, model.Password);
-            if (containerModel == null)
+            var isContainerReady = DockerOperation.TryCreateContainer(model.Username, model.Password, out var dockerContainerModel);
+            if (!isContainerReady)
                 throw new System.Web.Http.HttpResponseException(HttpStatusCode.InternalServerError);
 
-            return containerModel;
+            return dockerContainerModel;
         }
     }
 }

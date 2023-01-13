@@ -4,6 +4,6 @@ namespace vps.Interfaces
 {
     public interface IDockerOperation
     {
-        DockerContainerModel CreateContainer(string username, string password);
+        bool TryCreateContainer(string username, string password, out DockerContainerModel model);
     }
 }

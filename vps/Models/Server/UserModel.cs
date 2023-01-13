@@ -2,7 +2,7 @@
 
 namespace vps.Models.Server
 {
-    public class ServerCreateModel
+    public class UserModel
     {
         [JsonProperty("username")]
         public string Username { get; set; }

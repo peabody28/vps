@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using vps.Constants;
+using vps.Helpers;
 using vps.Interfaces;
 using vps.Models;
 
@@ -6,67 +7,62 @@ namespace vps.Operations
 {
     public class DockerOperation : IDockerOperation
     {
+        #region [ Dependency -> Operations ]
+
+        public INetworkOperation NetworkOperation { get; set; }
+
+        public IProcessOperation ProcessOperation { get; set; }
+
+        #endregion
+
         public ILogger<DockerOperation> Logger { get; set; }
 
-        public ITcpOperation TcpOperation { get; set; }
+        public IConfiguration Configuration { get; set; }
 
-        public DockerOperation(ILogger<DockerOperation> logger, ITcpOperation tcpOperation)
+        public DockerOperation(ILogger<DockerOperation> logger, INetworkOperation networkOperation, IProcessOperation processOperation, IConfiguration configuration)
         {
             Logger = logger;
-            TcpOperation = tcpOperation;
+            NetworkOperation = networkOperation;
+            ProcessOperation = processOperation;
+            Configuration = configuration;
         }
 
-        public DockerContainerModel CreateContainer(string username, string password)
+        public bool TryCreateContainer(string username, string password, out DockerContainerModel model)
         {
-            using var process = Process.Start(new ProcessStartInfo
-            {
-                FileName = "/bin/sh",
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                WorkingDirectory = "/home/max/ubuntu_ssh"
-            });
+            model = null;
+            var containerName = username;
 
-            if (process == null)
-                return null;
+            var sshPort = NetworkOperation.FreeLocalPort();
 
-            var host = "0.0.0.0";
-            var sshPort = TcpOperation.FreePort(host);
-            if (sshPort.Equals(-1))
-                return null;
+            if (sshPort.Equals(NetworkConstants.UnsupportedPort)) return false;
 
-            Logger.LogInformation($"find free port: {sshPort}");
+            Logger.LogInformation($"Free port is: {sshPort}");
 
-            string command = string.Format(@"
-                useradd -ms /bin/sh {0} &&
-                usermod -aG sudo {0} &&
-                echo -e '{1}\n{1}' | passwd {0} &&
-                cd /home/{0} &&
-                mkdir .ssh && chmod 700 .ssh &&
-                touch .ssh/authorized_keys && chmod 600 .ssh/authorized_keys &&
-                chown -R {0}:{0} /home/{0} &&
-                service ssh start &&
-                exit", username, password);
+            var imageName = Configuration.GetSection("Docker:ImageName").Value;
 
-            using (var sw = process.StandardInput)
-            {
-                if (sw.BaseStream.CanWrite)
-                {
-                    sw.WriteLine($"docker run --privileged --name {username} -p {sshPort}:22 -d test tail -f /dev/null");
-                    sw.WriteLine($"docker exec -d {username} /bin/bash -c \"{command}\"");
-                }
-            }
+            var isPrivelegiesAllowed = Configuration.GetValue<bool>("Docker:PrivelegiesAllowed");
 
-            process.WaitForExit();
-            var output = process.StandardOutput.ReadToEnd();
-            var error = process.StandardError.ReadToEnd();
+            var exposedPorts = new Dictionary<int, int>{ { sshPort, 22 } };
 
-            Logger.LogInformation($"try to create container. username {username}, passwd {password}, output: {output}, error {error}");
+            var dockerRunCommand = DockerHelper.BuildRunCommand(isPrivelegiesAllowed, containerName, exposedPorts, imageName);
 
-            return new DockerContainerModel
-            {
-                SshPort = sshPort
-            };
+            var isContainerStarted = ProcessOperation.ExecuteCommand(dockerRunCommand, out var exitCode, out var output, out var error);
+            
+            Logger.LogInformation($"try to create container {containerName}. Command: {dockerRunCommand}, ExitCode: {exitCode}, Output: {output}, Error {error}");
+
+            var innerContainerCommand = DockerHelper.BuildUserCreateCommand(username, password);
+
+            var dockerExecCommand = DockerHelper.BuildExecCommand(containerName, innerContainerCommand);
+
+            var isUserCreated = ProcessOperation.ExecuteCommand(dockerExecCommand, out exitCode, out output, out error);
+
+            Logger.LogInformation($"try to create user in container '{containerName}'. ExitCode: {exitCode}, Output: {output}, Error: {error}");
+
+            var isSshDaemonStarted = ProcessOperation.ExecuteCommand("service ssh start", out exitCode, out output, out error);
+
+            Logger.LogInformation($"try to start SSH daemon. ExitCode: {exitCode}, Output: {output}, Error: {error}");
+
+            return isContainerStarted && isUserCreated && isSshDaemonStarted;
         }
     }
 }

@@ -7,8 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.AddScoped<IProcessOperation, ProcessOperation>();
 builder.Services.AddScoped<IDockerOperation, DockerOperation>();
-builder.Services.AddScoped<ITcpOperation, TcpOperation>();
+builder.Services.AddScoped<INetworkOperation, NetworkOperation>();
 
 var app = builder.Build();
 
