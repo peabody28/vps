@@ -47,7 +47,9 @@ namespace vps.Operations
             var dockerRunCommand = DockerHelper.BuildRunCommand(isPrivelegiesAllowed, containerName, exposedPorts, imageName);
 
             var isContainerStarted = ProcessOperation.ExecuteCommand(dockerRunCommand, out var exitCode, out var output, out var error);
-            
+
+            if (!isContainerStarted) return false;
+
             Logger.LogInformation($"try to create container {containerName}. Command: {dockerRunCommand}, ExitCode: {exitCode}, Output: {output}, Error {error}");
 
             var innerContainerCommand = DockerHelper.BuildUserCreateCommand(username, password);
@@ -56,13 +58,15 @@ namespace vps.Operations
 
             var isUserCreated = ProcessOperation.ExecuteCommand(dockerExecCommand, out exitCode, out output, out error);
 
+            if(!isUserCreated) return false;
+
             Logger.LogInformation($"try to create user in container '{containerName}'. ExitCode: {exitCode}, Output: {output}, Error: {error}");
 
             var isSshDaemonStarted = ProcessOperation.ExecuteCommand("service ssh start", out exitCode, out output, out error);
 
             Logger.LogInformation($"try to start SSH daemon. ExitCode: {exitCode}, Output: {output}, Error: {error}");
 
-            return isContainerStarted && isUserCreated && isSshDaemonStarted;
+            return isSshDaemonStarted;
         }
     }
 }

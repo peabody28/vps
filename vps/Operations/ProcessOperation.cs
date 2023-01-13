@@ -14,7 +14,8 @@ namespace vps.Operations
                 Arguments = command,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardError = true,
+                WorkingDirectory = CommonConstants.ProcessWorkingDirectory
             });
 
             process.WaitForExit();
