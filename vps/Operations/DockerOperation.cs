@@ -34,9 +34,9 @@ namespace vps.Operations
 
             var sshPort = NetworkOperation.FreeLocalPort();
 
-            if (sshPort.Equals(NetworkConstants.UnsupportedPort)) return false;
-
             Logger.LogInformation($"Free port is: {sshPort}");
+
+            if (sshPort.Equals(NetworkConstants.UnsupportedPort)) return false;
 
             var imageName = Configuration.GetSection("Docker:ImageName").Value;
 
@@ -48,9 +48,9 @@ namespace vps.Operations
 
             var isContainerStarted = ProcessOperation.ExecuteCommand(dockerRunCommand, out var exitCode, out var output, out var error);
 
-            if (!isContainerStarted) return false;
-
             Logger.LogInformation($"try to create container {containerName}. Command: {dockerRunCommand}, ExitCode: {exitCode}, Output: {output}, Error {error}");
+
+            if (!isContainerStarted) return false;
 
             var innerContainerCommand = DockerHelper.BuildUserCreateCommand(username, password);
 
@@ -58,13 +58,17 @@ namespace vps.Operations
 
             var isUserCreated = ProcessOperation.ExecuteCommand(dockerExecCommand, out exitCode, out output, out error);
 
-            if(!isUserCreated) return false;
-
             Logger.LogInformation($"try to create user in container '{containerName}'. ExitCode: {exitCode}, Output: {output}, Error: {error}");
 
-            var isSshDaemonStarted = ProcessOperation.ExecuteCommand("service ssh start", out exitCode, out output, out error);
+            if (!isUserCreated) return false;
+
+            dockerExecCommand = DockerHelper.BuildExecCommand(containerName, "service ssh start");
+
+            var isSshDaemonStarted = ProcessOperation.ExecuteCommand(dockerExecCommand, out exitCode, out output, out error);
 
             Logger.LogInformation($"try to start SSH daemon. ExitCode: {exitCode}, Output: {output}, Error: {error}");
+
+            model = new DockerContainerModel { SshPort = sshPort };
 
             return isSshDaemonStarted;
         }

@@ -11,12 +11,16 @@ namespace vps.Operations
             using var process = Process.Start(new ProcessStartInfo
             {
                 FileName = CommonConstants.CommandShell,
-                Arguments = command,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                WorkingDirectory = CommonConstants.ProcessWorkingDirectory
             });
+
+            using (var sw = process.StandardInput)
+            {
+                if (sw.BaseStream.CanWrite)
+                    sw.WriteLine(command);
+            }
 
             process.WaitForExit();
 
