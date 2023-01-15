@@ -19,7 +19,7 @@
         public static string BuildUserCreateCommand(string userName, string password)
         {
             return string.Format(@"
-                useradd -ms /bin/sh {0} &&
+                useradd -ms /bin/bash {0} &&
                 usermod -aG sudo {0} &&
                 echo -e '{1}\n{1}' | passwd {0} &&
                 cd /home/{0} &&
