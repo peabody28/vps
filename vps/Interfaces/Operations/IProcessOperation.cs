@@ -1,4 +1,4 @@
-﻿namespace vps.Interfaces
+﻿namespace vps.Interfaces.Operations
 {
     public interface IProcessOperation
     {

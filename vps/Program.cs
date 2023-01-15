@@ -1,4 +1,6 @@
-using vps.Interfaces;
+using vps.Interfaces.Entities;
+using vps.Interfaces.Operations;
+using vps.Models;
 using vps.Operations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.AddTransient<IDockerContainer, DockerContainer>();
 builder.Services.AddScoped<IProcessOperation, ProcessOperation>();
 builder.Services.AddScoped<IDockerOperation, DockerOperation>();
 builder.Services.AddScoped<INetworkOperation, NetworkOperation>();

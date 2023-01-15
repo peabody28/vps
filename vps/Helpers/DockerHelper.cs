@@ -1,4 +1,6 @@
-﻿namespace vps.Helpers
+﻿using vps.Constants;
+
+namespace vps.Helpers
 {
     public static class DockerHelper
     {
@@ -18,14 +20,15 @@
 
         public static string BuildUserCreateCommand(string userName, string password)
         {
-            return string.Format(@"
-                useradd -ms /bin/bash {0} &&
-                usermod -aG sudo {0} &&
-                echo -e '{1}\n{1}' | passwd {0} &&
-                cd /home/{0} &&
-                mkdir .ssh && chmod 700 .ssh &&
-                touch .ssh/authorized_keys && chmod 600 .ssh/authorized_keys &&
-                chown -R {0}:{0} /home/{0}", userName, password);
+            var commands = new List<string>();
+            commands.Add(string.Format("useradd -ms /bin/bash {0}", userName));
+            commands.Add(string.Format("usermod -aG sudo {0}", userName));
+            commands.Add(string.Format("echo -e '{1}\n{1}' | passwd {0}", userName, password));
+            commands.Add(string.Format("mkdir /home/{0}/.ssh && chmod 700 /home/{0}/.ssh", userName));
+            commands.Add(string.Format("touch /home/{0}/.ssh/authorized_keys && chmod 600 /home/{0}/.ssh/authorized_keys", userName));
+            commands.Add(string.Format("chown -R {0}:{0} /home/{0}", userName));
+
+            return string.Join(CommonConstants.BashCommandsSeparator, commands);
         }
     }
 }

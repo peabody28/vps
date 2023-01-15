@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using vps.Constants;
-using vps.Interfaces;
+using vps.Interfaces.Operations;
 
 namespace vps.Operations
 {
@@ -30,14 +30,20 @@ namespace vps.Operations
             }
         }
 
-        public int FreeLocalPort()
+        public int FreeLocalPort(IEnumerable<int> excludedPorts = null)
         {
             var startPort = Configuration.GetValue<int>("Server:StartPort");
             var endPort = Configuration.GetValue<int>("Server:EndPort");
             
             foreach(var portNumber in Enumerable.Range(startPort, endPort))
+            {
+                if (excludedPorts != null && excludedPorts.Contains(portNumber))
+                    continue;
+
                 if (IsLocalPortAvailable(portNumber))
                     return portNumber;
+            }
+               
 
             return NetworkConstants.UnsupportedPort;
         }

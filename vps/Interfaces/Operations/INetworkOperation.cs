@@ -1,9 +1,9 @@
-﻿namespace vps.Interfaces
+﻿namespace vps.Interfaces.Operations
 {
     public interface INetworkOperation
     {
         bool IsLocalPortAvailable(int port);
 
-        int FreeLocalPort();
+        int FreeLocalPort(IEnumerable<int> excludedPorts = null);
     }
 }

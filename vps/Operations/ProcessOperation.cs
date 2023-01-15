@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using vps.Constants;
-using vps.Interfaces;
+using vps.Interfaces.Operations;
 
 namespace vps.Operations
 {
