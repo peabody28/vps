@@ -7,11 +7,14 @@ namespace vps.Operations
 {
     public class NetworkOperation : INetworkOperation
     {
+        public ILogger<NetworkOperation> Logger { get; set; }
+
         public IConfiguration Configuration { get; set; }
 
-        public NetworkOperation(IConfiguration configuration)
+        public NetworkOperation(IConfiguration configuration, ILogger<NetworkOperation> logger)
         {
             Configuration = configuration;
+            Logger = logger;
         }
 
         public bool IsLocalPortAvailable(int port)
@@ -24,8 +27,9 @@ namespace vps.Operations
                 listeningSocket.Bind(myEP);
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
+                Logger.LogError($"local port ({port}) binding exception "+ex.Message);
                 return false;
             }
         }
