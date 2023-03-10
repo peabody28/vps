@@ -65,6 +65,8 @@ namespace vps.Operations
 
         private bool TryStartContainer(IDockerContainer dockerContainer)
         {
+            Logger.LogInformation("TRY GET SSH PORT");
+
             var sshPort = NetworkOperation.FreeLocalPort();
 
             Logger.LogInformation($"SSH port is: {sshPort}");

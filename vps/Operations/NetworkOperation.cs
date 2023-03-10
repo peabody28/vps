@@ -23,13 +23,17 @@ namespace vps.Operations
             var myEP = new IPEndPoint(address, port);
             try
             {
+                Logger.LogInformation($"TRY BIND");
+
                 using var listeningSocket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 listeningSocket.Bind(myEP);
+                Logger.LogInformation($"SUCCESS");
+
                 return true;
             }
             catch(Exception ex)
             {
-                Logger.LogError($"local port ({port}) binding exception "+ex.Message);
+                Logger.LogInformation($" FAILD local port ({port}) binding exception "+ex.Message);
                 return false;
             }
         }
@@ -38,9 +42,13 @@ namespace vps.Operations
         {
             var startPort = Configuration.GetValue<int>("Server:StartPort");
             var endPort = Configuration.GetValue<int>("Server:EndPort");
-            
-            foreach(var portNumber in Enumerable.Range(startPort, endPort))
+
+            Logger.LogInformation($"RANGE FROM {startPort} to {endPort}");
+
+            foreach (var portNumber in Enumerable.Range(startPort, endPort))
             {
+                Logger.LogInformation($"PORT N {portNumber}");
+
                 if (excludedPorts != null && excludedPorts.Contains(portNumber))
                     continue;
 
